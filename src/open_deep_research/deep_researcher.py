@@ -43,6 +43,7 @@ from open_deep_research.utils import (
     anthropic_websearch_called,
     get_all_tools,
     get_api_key_for_model,
+    get_azure_model_settings,
     get_model_token_limit,
     get_notes_from_tool_calls,
     get_today_str,
@@ -54,7 +55,14 @@ from open_deep_research.utils import (
 
 # Initialize a configurable model that we will use throughout the agent
 configurable_model = init_chat_model(
-    configurable_fields=("model", "max_tokens", "api_key"),
+    configurable_fields=(
+        "model",
+        "max_tokens",
+        "api_key",
+        "azure_deployment",
+        "azure_endpoint",
+        "api_version",
+    ),
 )
 
 async def clarify_with_user(state: AgentState, config: RunnableConfig) -> Command[Literal["write_research_brief", "__end__"]]:
@@ -84,6 +92,7 @@ async def clarify_with_user(state: AgentState, config: RunnableConfig) -> Comman
         "api_key": get_api_key_for_model(configurable.research_model, config),
         "tags": ["langsmith:nostream"]
     }
+    model_config.update(get_azure_model_settings(configurable.research_model, config))
     
     # Configure model with structured output and retry logic
     clarification_model = (
@@ -137,6 +146,7 @@ async def write_research_brief(state: AgentState, config: RunnableConfig) -> Com
         "api_key": get_api_key_for_model(configurable.research_model, config),
         "tags": ["langsmith:nostream"]
     }
+    research_model_config.update(get_azure_model_settings(configurable.research_model, config))
     
     # Configure model for structured research question generation
     research_model = (
@@ -197,6 +207,7 @@ async def supervisor(state: SupervisorState, config: RunnableConfig) -> Command[
         "api_key": get_api_key_for_model(configurable.research_model, config),
         "tags": ["langsmith:nostream"]
     }
+    research_model_config.update(get_azure_model_settings(configurable.research_model, config))
     
     # Available tools: research delegation, completion signaling, and strategic thinking
     lead_researcher_tools = [ConductResearch, ResearchComplete, think_tool]
@@ -395,6 +406,7 @@ async def researcher(state: ResearcherState, config: RunnableConfig) -> Command[
         "api_key": get_api_key_for_model(configurable.research_model, config),
         "tags": ["langsmith:nostream"]
     }
+    research_model_config.update(get_azure_model_settings(configurable.research_model, config))
     
     # Prepare system prompt with MCP context if available
     researcher_prompt = research_system_prompt.format(
@@ -524,12 +536,14 @@ async def compress_research(state: ResearcherState, config: RunnableConfig):
     """
     # Step 1: Configure the compression model
     configurable = Configuration.from_runnable_config(config)
-    synthesizer_model = configurable_model.with_config({
+    compression_model_config = {
         "model": configurable.compression_model,
         "max_tokens": configurable.compression_model_max_tokens,
         "api_key": get_api_key_for_model(configurable.compression_model, config),
         "tags": ["langsmith:nostream"]
-    })
+    }
+    compression_model_config.update(get_azure_model_settings(configurable.compression_model, config))
+    synthesizer_model = configurable_model.with_config(compression_model_config)
     
     # Step 2: Prepare messages for compression
     researcher_messages = state.get("researcher_messages", [])
@@ -630,6 +644,7 @@ async def final_report_generation(state: AgentState, config: RunnableConfig):
         "api_key": get_api_key_for_model(configurable.final_report_model, config),
         "tags": ["langsmith:nostream"]
     }
+    writer_model_config.update(get_azure_model_settings(configurable.final_report_model, config))
     
     # Step 3: Attempt report generation with token limit retry logic
     max_retries = 3

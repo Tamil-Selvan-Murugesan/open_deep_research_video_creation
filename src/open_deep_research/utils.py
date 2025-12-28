@@ -83,11 +83,13 @@ async def tavily_search(
     
     # Initialize summarization model with retry logic
     model_api_key = get_api_key_for_model(configurable.summarization_model, config)
+    azure_settings = get_azure_model_settings(configurable.summarization_model, config)
     summarization_model = init_chat_model(
         model=configurable.summarization_model,
         max_tokens=configurable.summarization_model_max_tokens,
         api_key=model_api_key,
-        tags=["langsmith:nostream"]
+        tags=["langsmith:nostream"],
+        **azure_settings
     ).with_structured_output(Summary).with_retry(
         stop_after_attempt=configurable.max_structured_output_retries
     )
@@ -789,8 +791,13 @@ MODEL_TOKEN_LIMITS = {
     "openai:gpt-4.1-mini": 1047576,
     "openai:gpt-4.1-nano": 1047576,
     "openai:gpt-4.1": 1047576,
+    "azure_openai:gpt-4.1-mini": 1047576,
+    "azure_openai:gpt-4.1-nano": 1047576,
+    "azure_openai:gpt-4.1": 1047576,
     "openai:gpt-4o-mini": 128000,
     "openai:gpt-4o": 128000,
+    "azure_openai:gpt-4o-mini": 128000,
+    "azure_openai:gpt-4o": 128000,
     "openai:o4-mini": 200000,
     "openai:o3-mini": 200000,
     "openai:o3": 200000,
@@ -899,6 +906,8 @@ def get_api_key_for_model(model_name: str, config: RunnableConfig):
             return None
         if model_name.startswith("openai:"):
             return api_keys.get("OPENAI_API_KEY")
+        elif model_name.startswith("azure_openai:"):
+            return api_keys.get("AZURE_OPENAI_API_KEY") or api_keys.get("OPENAI_API_KEY")
         elif model_name.startswith("anthropic:"):
             return api_keys.get("ANTHROPIC_API_KEY")
         elif model_name.startswith("google"):
@@ -907,11 +916,39 @@ def get_api_key_for_model(model_name: str, config: RunnableConfig):
     else:
         if model_name.startswith("openai:"): 
             return os.getenv("OPENAI_API_KEY")
+        elif model_name.startswith("azure_openai:"):
+            return os.getenv("AZURE_OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
         elif model_name.startswith("anthropic:"):
             return os.getenv("ANTHROPIC_API_KEY")
         elif model_name.startswith("google"):
             return os.getenv("GOOGLE_API_KEY")
         return None
+
+
+def get_azure_model_settings(model_name: str, config: RunnableConfig) -> dict[str, Any]:
+    """Get Azure OpenAI settings for a model name."""
+    model_value = model_name or ""
+    model_lower = model_value.lower()
+    if not model_lower.startswith("azure_openai:"):
+        return {}
+    configurable = config.get("configurable", {}) if config else {}
+    azure_deployment = configurable.get("azure_deployment")
+    if not azure_deployment and ":" in model_value:
+        azure_deployment = model_value.split(":", 1)[1] or None
+    azure_endpoint = configurable.get("azure_endpoint") or os.getenv("AZURE_OPENAI_ENDPOINT")
+    api_version = (
+        configurable.get("api_version")
+        or os.getenv("OPENAI_API_VERSION")
+        or os.getenv("AZURE_OPENAI_API_VERSION")
+    )
+    settings: dict[str, Any] = {}
+    if azure_deployment:
+        settings["azure_deployment"] = azure_deployment
+    if azure_endpoint:
+        settings["azure_endpoint"] = azure_endpoint
+    if api_version:
+        settings["api_version"] = api_version
+    return settings
 
 def get_tavily_api_key(config: RunnableConfig):
     """Get Tavily API key from environment or config."""

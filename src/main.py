@@ -144,6 +144,32 @@ def extract_display_message(
     return role, content
 
 
+def extract_display_from_dict(message: dict[str, Any]) -> tuple[str, str] | None:
+    role_value = message.get("role") or message.get("type")
+    if role_value not in {"assistant", "ai", "user", "human"}:
+        return None
+    content = normalize_message_content(message.get("content"))
+    if not content:
+        return None
+    role = "Assistant" if role_value in {"assistant", "ai"} else "User"
+    return role, content
+
+
+def iter_message_updates(update: Any) -> Iterable[Any]:
+    if isinstance(update, dict):
+        messages = update.get("messages")
+        if messages is None:
+            return
+        if isinstance(messages, list):
+            for message in messages:
+                yield message
+        else:
+            yield messages
+    elif isinstance(update, list):
+        for item in update:
+            yield from iter_message_updates(item)
+
+
 def build_runnable_config(config_payload: dict[str, Any], args: argparse.Namespace) -> dict[str, Any]:
     thread_id = args.thread_id or str(uuid.uuid4())
     config: dict[str, Any] = {"configurable": {"thread_id": thread_id}}
@@ -184,19 +210,36 @@ async def stream_run(
     async for event in graph.astream(
         {"messages": history},
         config,
-        stream_mode=["messages", "values"],
+        stream_mode=["updates", "values"],
     ):
-        _, mode, payload = event
-        if mode == "messages":
-            message, _meta = payload
-            display = extract_display_message(message, seen_ids)
-            if not display:
+        if isinstance(event, tuple):
+            if len(event) == 3:
+                _, mode, payload = event
+            elif len(event) == 2:
+                mode, payload = event
+            else:
                 continue
-            role, content = display
-            append_transcript(transcript, role, content)
-            new_history.append(
-                {"role": "assistant" if role == "Assistant" else "user", "content": content}
-            )
+        else:
+            mode = "values"
+            payload = event
+        if mode == "updates":
+            if not isinstance(payload, dict):
+                continue
+            for update in payload.values():
+                for message in iter_message_updates(update):
+                    if isinstance(message, BaseMessage):
+                        display = extract_display_message(message, seen_ids)
+                    elif isinstance(message, dict):
+                        display = extract_display_from_dict(message)
+                    else:
+                        display = None
+                    if not display:
+                        continue
+                    role, content = display
+                    if role != "Assistant":
+                        continue
+                    append_transcript(transcript, role, content)
+                    new_history.append({"role": "assistant", "content": content})
         elif mode == "values":
             if isinstance(payload, dict):
                 final_state = payload
@@ -218,9 +261,13 @@ async def run_interactive(prompt: str, config: dict[str, Any]) -> list[str]:
             break
         if not history or history[-1]["role"] != "assistant":
             raise SystemExit("Run ended without a final report or clarification prompt.")
-        if not sys.stdin.isatty():
-            raise SystemExit("Clarification required, but stdin is not interactive.")
-        response = input("Clarification> ")
+        if sys.stdin.isatty():
+            response = input("Clarification> ")
+        else:
+            response = sys.stdin.readline()
+            if not response:
+                raise SystemExit("Clarification required, but stdin has no data.")
+            response = response.rstrip("\n")
         history.append({"role": "user", "content": response})
         append_transcript(transcript, "User", response)
     return transcript

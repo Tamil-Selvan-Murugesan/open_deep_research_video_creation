@@ -619,17 +619,17 @@ researcher_builder.add_edge("compress_research", END)      # Exit point after co
 researcher_subgraph = researcher_builder.compile()
 
 async def final_report_generation(state: AgentState, config: RunnableConfig):
-    """Generate the final comprehensive research report with retry logic for token limits.
-    
-    This function takes all collected research findings and synthesizes them into a 
-    well-structured, comprehensive final report using the configured report generation model.
-    
+    """Generate final Veo-3 prompts and 6-second voiceovers with token-limit retries.
+
+    This function takes all collected research findings and synthesizes them into
+    a JSON payload of Veo-3 prompts using the configured final report model.
+
     Args:
         state: Agent state containing research findings and context
         config: Runtime configuration with model settings and API keys
-        
+
     Returns:
-        Dictionary containing the final report and cleared state
+        Dictionary containing the JSON output and cleared state
     """
     # Step 1: Extract research findings and prepare state cleanup
     notes = state.get("notes", [])
@@ -683,8 +683,8 @@ async def final_report_generation(state: AgentState, config: RunnableConfig):
                     model_token_limit = get_model_token_limit(configurable.final_report_model)
                     if not model_token_limit:
                         return {
-                            "final_report": f"Error generating final report: Token limit exceeded, however, we could not determine the model's maximum context length. Please update the model map in deep_researcher/utils.py with this information. {e}",
-                            "messages": [AIMessage(content="Report generation failed due to token limits")],
+                            "final_report": f"Error generating video prompts: Token limit exceeded, however, we could not determine the model's maximum context length. Please update the model map in deep_researcher/utils.py with this information. {e}",
+                            "messages": [AIMessage(content="Video prompt generation failed due to token limits")],
                             **cleared_state
                         }
                     # Use 4x token limit as character approximation for truncation
@@ -699,15 +699,15 @@ async def final_report_generation(state: AgentState, config: RunnableConfig):
             else:
                 # Non-token-limit error: return error immediately
                 return {
-                    "final_report": f"Error generating final report: {e}",
-                    "messages": [AIMessage(content="Report generation failed due to an error")],
+                    "final_report": f"Error generating video prompts: {e}",
+                    "messages": [AIMessage(content="Video prompt generation failed due to an error")],
                     **cleared_state
                 }
     
     # Step 4: Return failure result if all retries exhausted
     return {
-        "final_report": "Error generating final report: Maximum retries exceeded",
-        "messages": [AIMessage(content="Report generation failed after maximum retries")],
+        "final_report": "Error generating video prompts: Maximum retries exceeded",
+        "messages": [AIMessage(content="Video prompt generation failed after maximum retries")],
         **cleared_state
     }
 

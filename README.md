@@ -37,7 +37,6 @@ The final output is JSON only (no markdown), with exactly 6 prompts:
 - `src/main.py` - CLI runner that prints a transcript and the final JSON.
 - `tests/test_veo3.py` - Example script to call the Google GenAI client for Veo-3 video generation.
 - `examples/` - Sample prompt outputs; `examples/video_from_veo3/` contains generated videos.
-- `langgraph.json` - LangGraph server entrypoint config.
 
 ## Quickstart
 1) Create and activate a virtual environment:

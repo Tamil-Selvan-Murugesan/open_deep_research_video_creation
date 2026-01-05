@@ -53,6 +53,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--output-file",
         help="Write the final report to a file instead of stdout.",
     )
+    parser.add_argument(
+        "--output-json",
+        help="Write the final JSON report payload to a file.",
+    )
     return parser
 
 
@@ -248,16 +252,18 @@ async def stream_run(
     return final_state
 
 
-async def run_interactive(prompt: str, config: dict[str, Any]) -> list[str]:
+async def run_interactive(prompt: str, config: dict[str, Any]) -> tuple[list[str], str]:
     graph = deep_researcher_builder.compile(checkpointer=MemorySaver())
     history: list[dict[str, str]] = [{"role": "user", "content": prompt}]
     transcript: list[str] = []
+    final_report_text = ""
     append_transcript(transcript, "User", prompt)
 
     while True:
         final_state = await stream_run(graph, history, config, transcript)
         final_report = final_state.get("final_report") if isinstance(final_state, dict) else None
         if final_report:
+            final_report_text = str(final_report)
             break
         if not history or history[-1]["role"] != "assistant":
             raise SystemExit("Run ended without a final report or clarification prompt.")
@@ -270,7 +276,7 @@ async def run_interactive(prompt: str, config: dict[str, Any]) -> list[str]:
             response = response.rstrip("\n")
         history.append({"role": "user", "content": response})
         append_transcript(transcript, "User", response)
-    return transcript
+    return transcript, final_report_text
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -281,9 +287,13 @@ def main(argv: list[str] | None = None) -> int:
     config_payload = load_config_payload(args.config)
     config = build_runnable_config(config_payload, args)
     apply_overrides(config, args.overrides)
-    transcript = asyncio.run(run_interactive(prompt, config))
+    transcript, final_report = asyncio.run(run_interactive(prompt, config))
     if args.output_file:
         Path(args.output_file).write_text("\n".join(transcript), encoding="utf-8")
+    if args.output_json:
+        if not final_report:
+            raise SystemExit("No final report available to write as JSON.")
+        Path(args.output_json).write_text(final_report, encoding="utf-8")
     return 0
 
 

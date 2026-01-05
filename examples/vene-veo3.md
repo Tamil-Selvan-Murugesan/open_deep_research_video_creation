@@ -1,0 +1,51 @@
+User: Why US attacked Venezuala?
+Assistant: Could you clarify which specific incident or time period you are referring to regarding the US attacking Venezuela? There is no widely known direct attack by the US on Venezuela as of early 2026. Are you referring to economic sanctions, covert actions, military threats, or a particular event?
+User: There is one just 2 days before. Search in the internet.
+Assistant: Thank you for clarifying your request. You are asking for information about a reported US attack on Venezuela that allegedly took place 2 days ago (around January 3, 2026). I will now search for and compile available information regarding this incident and provide you with a report.
+Assistant:
+{
+  "video_prompts": [
+    {
+      "id": 1,
+      "veo_prompt": "Cinematic wide shot, aerial view over Caracas at night, city plunged into darkness with isolated explosions illuminating the skyline. Realistic, urgent atmosphere, tracking camera descending towards chaos.",
+      "voiceover": "On January 3, 2026, US airstrikes and cyber attacks caused a blackout in Caracas, launching a major military operation targeting Venezuela’s leadership and infrastructure.",
+      "actual-content": "On January 3, 2026, the US initiated airstrikes and a cyber operation that led to a blackout in Caracas, beginning a military attack aimed at Venezuelan government sites.",
+      "duration_seconds": 8
+    },
+    {
+      "id": 2,
+      "veo_prompt": "Close-up, dramatic night vision shot of US special forces deploying from helicopters near the presidential palace. Dust, urgency, and tactical precision in a tense, realistic scene.",
+      "voiceover": "US special operations forces swiftly extracted President Nicolás Maduro and his wife from Caracas, deploying helicopters and ground teams during covert nighttime strikes.",
+      "actual-content": "US special operations forces entered Caracas using helicopters and ground teams, capturing Venezuelan President Nicolás Maduro and his wife through a coordinated nighttime assault.",
+      "duration_seconds": 8
+    },
+    {
+      "id": 3,
+      "veo_prompt": "Perspective from a city street, wide lens, locals in shadows as explosions echo. People huddle, faces illuminated by phones. Atmosphere tense, blue-gray lighting and documentary realism.",
+      "voiceover": "Venezuelans described chaos and fear as explosions erupted and communications failed, with widespread confusion amid deserted streets and ongoing US-led operations.",
+      "actual-content": "During the attack, Caracas residents witnessed explosions, loss of communication, and deserted streets, with many expressing shock and fear in real-time accounts.",
+      "duration_seconds": 8
+    },
+    {
+      "id": 4,
+      "veo_prompt": "Studio-style composition, split screen showing US officials in press conference contrasted with somber Venezuelan leaders, cinematic lighting highlighting tense emotions and serious expressions.",
+      "voiceover": "US officials claimed the extraction as a law enforcement mission, while Venezuelan leaders denounced it as kidnapping and armed aggression against their sovereignty.",
+      "actual-content": "US officials described the mission as justified law enforcement; Venezuelan government called it kidnapping and armed aggression violating international norms.",
+      "duration_seconds": 8
+    },
+    {
+      "id": 5,
+      "veo_prompt": "Global map animation, flags and lines showing reactions from China, Russia, Latin America, and UN. Warm and cool glows distinguish support and condemnation, infographic style.",
+      "voiceover": "Worldwide, China and Russia condemned the attack while US allies expressed support. The United Nations and Latin American neighbors called it a breach of international law.",
+      "actual-content": "China, Russia, many Latin American countries, and the UN condemned the US attack; some US allies supported the operation, showing divided global responses.",
+      "duration_seconds": 8
+    },
+    {
+      "id": 6,
+      "veo_prompt": "Stylized transition, somber montage of US and Venezuelan flags, protest crowds, and screens displaying breaking news. Slow pan, subdued colors, documentary feel.",
+      "voiceover": "The incident drastically impacts US-Venezuela relations, setting a precedent for regime change and raising fears of instability, mass displacement, and humanitarian crisis.",
+      "actual-content": "The US operation is expected to reshape US-Venezuela relations, prompting concerns about future regime changes, instability, and humanitarian impacts the attack may cause.",
+      "duration_seconds": 8
+    }
+  ]
+}

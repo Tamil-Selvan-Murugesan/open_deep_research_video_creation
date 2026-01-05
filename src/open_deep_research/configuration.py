@@ -16,6 +16,12 @@ class SearchAPI(Enum):
     TAVILY = "tavily"
     NONE = "none"
 
+class VideoProvider(Enum):
+    """Enumeration of available video generation providers."""
+
+    VEO3 = "veo3"
+    RUNWAY = "runway"
+
 class MCPConfig(BaseModel):
     """Configuration for Model Context Protocol (MCP) servers."""
     
@@ -209,6 +215,65 @@ class Configuration(BaseModel):
                 "description": "Maximum output tokens for final report model"
             }
         }
+    )
+    # Video Generation Configuration
+    video_provider: VideoProvider = Field(
+        default=VideoProvider.VEO3,
+        metadata={
+            "x_oap_ui_config": {
+                "type": "select",
+                "default": "veo3",
+                "description": "Video generation provider to use for prompt-to-video.",
+                "options": [
+                    {"label": "Veo-3 (Gemini)", "value": VideoProvider.VEO3.value},
+                    {"label": "Runway", "value": VideoProvider.RUNWAY.value},
+                ],
+            }
+        },
+    )
+    video_model: str = Field(
+        default="veo-3.1-generate-preview",
+        metadata={
+            "x_oap_ui_config": {
+                "type": "text",
+                "default": "veo-3.1-generate-preview",
+                "description": "Model name for the selected video provider.",
+            }
+        },
+    )
+    video_output_dir: str = Field(
+        default="outputs/videos",
+        metadata={
+            "x_oap_ui_config": {
+                "type": "text",
+                "default": "outputs/videos",
+                "description": "Directory to save generated videos and metadata.",
+            }
+        },
+    )
+    video_poll_interval_seconds: int = Field(
+        default=10,
+        metadata={
+            "x_oap_ui_config": {
+                "type": "number",
+                "default": 10,
+                "min": 1,
+                "max": 120,
+                "description": "Seconds between provider status polls.",
+            }
+        },
+    )
+    video_max_wait_seconds: int = Field(
+        default=900,
+        metadata={
+            "x_oap_ui_config": {
+                "type": "number",
+                "default": 900,
+                "min": 60,
+                "max": 3600,
+                "description": "Maximum time to wait for a video generation.",
+            }
+        },
     )
     # MCP server configuration
     mcp_config: Optional[MCPConfig] = Field(

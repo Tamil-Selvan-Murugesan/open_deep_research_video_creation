@@ -35,6 +35,8 @@ The final output is JSON only (no markdown), with exactly 6 prompts:
 - `src/open_deep_research/prompts.py` - Prompt templates, including the video prompt schema.
 - `src/open_deep_research/configuration.py` - Model and search configuration.
 - `src/main.py` - CLI runner that prints a transcript and the final JSON.
+- `src/open_deep_research/video_generate.py` - CLI to turn prompt JSON into videos.
+- `src/open_deep_research/video_providers/` - Pluggable video provider implementations (Veo-3, Runway stub).
 - `tests/test_veo3.py` - Example script to call the Google GenAI client for Veo-3 video generation.
 - `examples/` - Sample prompt outputs; `examples/video_from_veo3/` contains generated videos.
 
@@ -66,13 +68,32 @@ Write the transcript to a file:
 python src/main.py --output-file outputs/quantum.txt "..."
 ```
 
+Write only the final JSON report payload to a file:
+```bash
+python src/main.py --output-json prompts.json "..."
+```
+
 Override configuration:
 ```bash
 python src/main.py --set final_report_model="openai:gpt-4.1" --set search_api="tavily" "..."
 ```
 
-## Video generation (planned)
-The pipeline currently stops after generating Veo-3 prompts. A direct Gemini video generation API integration is planned. For now, `tests/test_veo3.py` shows a simple example of using `google-genai` to generate a video from a single prompt.
+## Generate videos (separate command)
+Use the prompt JSON produced by the research pipeline to generate videos.
+
+Generate all prompts with Veo-3:
+```bash
+python -m open_deep_research.video_generate --provider veo3 --input prompts.json --output-dir outputs/videos
+```
+
+Generate only specific ids:
+```bash
+python -m open_deep_research.video_generate --provider veo3 --input prompts.json --ids 1,3,5
+```
+
+The command saves each video file plus a sidecar JSON metadata file and prints a JSON summary to stdout for UI consumption.
+
+Runway is wired as a provider stub and will be enabled once API details are configured.
 
 ## Notes on configuration
 Model and search settings live in `src/open_deep_research/configuration.py`. Defaults are set to `azure_openai:*` but can be swapped to OpenAI, Anthropic, Google, or other supported providers. Search options include Tavily, OpenAI native web search, Anthropic native web search, or no search.

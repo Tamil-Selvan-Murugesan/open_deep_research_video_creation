@@ -8,7 +8,6 @@ Open Deep Research is a configurable, fully open-source deep research agent that
 ### Root Directory
 - `README.md` - Comprehensive project documentation with quickstart guide
 - `pyproject.toml` - Python project configuration and dependencies
-- `langgraph.json` - LangGraph configuration defining the main graph entry point
 - `uv.lock` - UV package manager lock file
 - `LICENSE` - MIT license
 - `.env.example` - Environment variables template (not tracked)
@@ -28,9 +27,6 @@ Contains two earlier research implementations:
 - `legacy.md` - Documentation for legacy implementations
 - `CLAUDE.md` - Legacy-specific Claude instructions
 - `tests/` - Legacy-specific tests
-
-### Security (`src/security/`)
-- `auth.py` - Authentication handler for LangGraph deployment
 
 ### Testing (`tests/`)
 - `run_evaluate.py` - Main evaluation script configured to run on deep research bench
@@ -52,7 +48,6 @@ Contains two earlier research implementations:
 - **MCP Servers** - Model Context Protocol for extended capabilities
 
 ## Development Commands
-- `uvx langgraph dev` - Start development server with LangGraph Studio
 - `python tests/run_evaluate.py` - Run comprehensive evaluations
 - `ruff check` - Code linting
 - `mypy` - Type checking
@@ -60,7 +55,6 @@ Contains two earlier research implementations:
 ## Configuration
 All settings configurable via:
 - Environment variables (`.env` file)
-- Web UI in LangGraph Studio
 - Direct configuration modification
 
 Key settings include model selection, search API choice, concurrency limits, and MCP server configurations.

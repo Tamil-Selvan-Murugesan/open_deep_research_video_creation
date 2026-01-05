@@ -247,8 +247,9 @@ Output Requirements:
 1) Return ONLY valid JSON. No markdown, no commentary, no code fences.
 2) Create exactly 6 video prompts.
 3) Each prompt must include a concise voiceover that fits ~8 seconds of speech (aim for 20-26 words) and carries the core technical information. Be dense, specific, and crisp; avoid filler and vague claims.
-4) Keep output clean: no citations, no sources, no URLs, no references to research process.
-5) Use details grounded in the findings. If a specific detail is missing, keep it generic rather than inventing facts.
+4) Each prompt must include an "actual-content" field that states the exact factual information used to create the prompt and voiceover, in plain text.
+5) Keep output clean: no citations, no sources, no URLs, no references to research process.
+6) Use details grounded in the findings. If a specific detail is missing, keep it generic rather than inventing facts.
 
 JSON Schema (must match exactly):
 {{
@@ -257,6 +258,7 @@ JSON Schema (must match exactly):
       "id": 1,
       "veo_prompt": "string",
       "voiceover": "string",
+      "actual-content": "string",
       "duration_seconds": 8
     }}
   ]
